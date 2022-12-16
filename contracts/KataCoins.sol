@@ -1,18 +1,14 @@
 pragma solidity ^0.8.17;
 
 import "./Ownable.sol";
-import "./erc721.sol";
 
-contract KataCoins is Ownable, ERC721 {
+contract KataCoins is Ownable {
     uint execFee = 0.001 ether;
-    uint minNbTry = 20;
     Kata[] private _katas;
     mapping(uint => address) internal _kataToOwner;
 
     //Les utilisateurs ayant payé pour executer un kata
-    mapping(address => bool) internal _allowed_users;
-    mapping(address => uint) internal _userCredits;
-
+    mapping(address => bool) _allowed_users;
 
     struct Kata {
         uint id;
@@ -24,23 +20,17 @@ contract KataCoins is Ownable, ERC721 {
         string test;
     }
 
-    struct Response {
-        Kata kata;
-        bool isOwned;
-    }
-
     function changeLevelUpFee(uint newFee) public onlyOwner {
         execFee = newFee;
     }
 
-    function createKata (
-        uint256 id,
+    function createKata(
         string calldata name,
         string calldata statement,
         string calldata functionDeclaration,
-        string calldata test
+        string calldata test 
     ) external onlyOwner {
-        _katas.push(Kata(id, name, statement, functionDeclaration, test));
+        _katas.push(Kata(0, name, statement, functionDeclaration, test));
     }
 
     //renvoyer sans test
@@ -48,54 +38,17 @@ contract KataCoins is Ownable, ERC721 {
         return _katas;
     }
 
-    function getKata(uint kataId) external view returns (Response memory) {
-        bool isOwned = _kataToOwner[kataId] != address(0);
-
-        return Response(_katas[kataId], isOwned);
+    function getKata(uint kataId) external view returns (Kata memory) {
+        return _katas[kataId];
     }
 
-    //back après execution peut importe le résultat de l'exécution
-    function tryKata(address user) external onlyOwner {
-        _userCredits[user] -= 1;
-    }
-
-    //On vérifie que l'utilisateur a encore du crédit pour faire des essais
-    function canExecuteKata(address user) external view onlyOwner returns (bool) {
-        return _userCredits[user] > 0;
-    }
-
-    function payCredit(uint nbTry) external payable {
-        require(nbTry >= minNbTry);
-        require(msg.value == nbTry * execFee);
-
-        _userCredits[msg.sender] += nbTry;
+    function requestExecution() external payable {
+        require(msg.value == execFee);
+        _allowed_users[msg.sender] = true;
     }
 
 
 
-    /// ERC 721 ///
-    function transfer(address to, uint256 tokenId) public override onlyOwner {
-        // Le kata n'est pas déjà possédé par qqun
-        require(_kataToOwner[tokenId] == address(0));
-        _kataToOwner[tokenId] = to;
-        emit Transfer(msg.sender, to, tokenId);
-    }
-
-    function approve(address _to, uint256 _tokenId) public override {
-
-    }
-
-    function takeOwnership(uint256 _tokenId) public override {
-
-    }
-
-    function balanceOf(address _owner) public view override returns (uint256 _balance){
-        return uint256(0);
-    }
-
-    function ownerOf(uint256 _tokenId) public view override returns (address _owner){
-        return address(0);
-    }
 
 
 }
