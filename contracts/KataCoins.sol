@@ -3,8 +3,9 @@ pragma solidity ^0.8.9;
 import "./Ownable.sol";
 
 contract KataCoins is Ownable {
-    Kata[] memory private _katas;
-    mapping(uint => address) private _kata_to_owner;
+    uint execFee = 0.001 ether;
+    Kata[] private _katas;
+    mapping(uint => address) private _kataToOwner;
 
     //Les utilisateurs ayant payé pour executer un kata
     address[] _allowed_users;
@@ -19,27 +20,30 @@ contract KataCoins is Ownable {
         string test;
     }
 
+    function changeLevelUpFee(uint newFee) public onlyOwner {
+        execFee = newFee;
+    }
+
     function createKata(
         string calldata name,
         string calldata statement,
         string calldata functionDeclaration,
         string calldata test 
     ) external onlyOwner {
-        _kata.push(Kata(name, statement, functionDeclaration, test));
+        _katas.push(Kata(name, statement, functionDeclaration, test));
     }
 
     //renvoyer sans test
     function getAllKata() external view returns (Kata[] memory) {
-        //should only return name, statement, functionDeclaration
-        return _kata;
+        return _katas;
     }
 
-    function getKata(address kataAddress) external view returns (Kata memory) {
-        return _kata[kataAddress];
+    function getKata(uint kataId) external view returns (Kata memory) {
+        return _katas[kataId];
     }
 
-    function requestExecution(address kataAddress) external payable {
-        require(msg.value == levelUpFee);
+    function requestExecution() external payable {
+        require(msg.value == execFee);
         _allowed_users.push(msg.sender);
     }
 
