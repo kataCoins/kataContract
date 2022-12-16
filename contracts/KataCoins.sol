@@ -2,42 +2,35 @@ pragma solidity ^0.8.9;
 
 import "./Ownable.sol";
 
-contract KataCoins is Ownable{
-    Kata[] kata;
-    string _runnerUrl = "TODO";
-
+contract KataCoins is Ownable {
+    mapping(address => Kata) private _kata;
 
     struct Kata {
         string name;
         //Enoncé du kata
         string statement;
+        string functionDeclaration;
+        string test;
     }
 
-    struct KataRun {
-        string language;
-        //Enoncé du kata
-        string code;
-        address kataId;
+    function createKata(
+        string calldata name,
+        string calldata statement,
+        string calldata functionDeclaration,
+        string calldata test 
+    ) external onlyOwner {
+        _kata.push(Kata(name, statement, functionDeclaration, test));
     }
 
-    function changeRunnerUrl(string calldata newUrl) public onlyOwner{
-        _runnerUrl = newUrl;
+    function getAllKata() external view returns (Kata[] memory) {
+        return _kata;
     }
 
-    //??
-    function runKata(string calldata files) public {
-        //Zipper fichier et encoder en base64 -> faire côté front
-
+    function getKata(address kataAddress) external view returns (Kata memory) {
+        return _kata[kataAddress];
     }
 
-    function execCode() private {
 
-
-    }
-
-    function createKata() public {
-
-    }
 
 }
 
