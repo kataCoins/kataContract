@@ -72,8 +72,9 @@ contract KataCoins is Ownable, ERC721 {
     }
 
     function payCredit(uint nbTry) external payable {
-        require(nbTry >= minNbTry);
-        require(msg.value == nbTry * execFee);
+
+        require(nbTry >= minNbTry, "minimun try is 20" );
+        require(msg.value == nbTry * execFee, "you need to pay the right amount");
 
         _userCredits[msg.sender] += nbTry;
     }

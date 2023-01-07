@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {ethers} from "hardhat";
+import {ethers, web3} from "hardhat";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
 import {Contract, ContractFactory} from "ethers";
 import {KataCoins} from "../typechain-types";
@@ -52,10 +52,8 @@ describe("Katas", function () {
     });
 
 
-    it("Should pay 1 try", async function () {
-        const rep = await KataCoinsContract.payCredit( 1);
-
-        //console.log(rep);
+    it("Should pay 20 try", async function () {
+        const rep = await KataCoinsContract.connect(user1).payCredit(20,  {value:  web3.utils.toWei( "0.020", 'ether')});
     });
 
 });
