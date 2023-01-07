@@ -2,6 +2,7 @@ pragma solidity ^0.8.17;
 
 import "./Ownable.sol";
 import "./erc721.sol";
+import "hardhat/console.sol";
 
 contract KataCoins is Ownable, ERC721 {
     uint private nextKataId = 0;
@@ -72,11 +73,15 @@ contract KataCoins is Ownable, ERC721 {
     }
 
     function payCredit(uint nbTry) external payable {
-
         require(nbTry >= minNbTry, "minimun try is 20" );
         require(msg.value == nbTry * execFee, "you need to pay the right amount");
-
+        console.log("payCredit", msg.sender, nbTry);
         _userCredits[msg.sender] += nbTry;
+    }
+
+    function getCredit() external view returns (uint) {
+        console.log("payCredit", msg.sender, _userCredits[msg.sender]);
+        return _userCredits[msg.sender];
     }
 
     /// ERC 721 ///
