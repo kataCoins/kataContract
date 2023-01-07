@@ -41,7 +41,9 @@ describe("Katas", function () {
     });
 
     it("Should get one kata", async function () {
-        const kata = await KataCoinsContract.getKata( kata1ID);
+        const rep = await KataCoinsContract.getKata( kata1ID);
+        const kata = rep[0];
+        const owned = rep[1];
 
         expect(kata.name).to.equal(kataName);
         expect(kata.statement).to.equal(kataStatement);
@@ -49,5 +51,11 @@ describe("Katas", function () {
         expect(kata.test).to.equal(kataTest);
     });
 
+
+    it("Should pay 1 try", async function () {
+        const rep = await KataCoinsContract.payCredit( 1);
+
+        //console.log(rep);
+    });
 
 });

@@ -78,8 +78,6 @@ contract KataCoins is Ownable, ERC721 {
         _userCredits[msg.sender] += nbTry;
     }
 
-
-
     /// ERC 721 ///
     function transfer(address to, uint256 tokenId) public override onlyOwner {
         // Le kata n'est pas déjà possédé par qqun
