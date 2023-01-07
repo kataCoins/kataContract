@@ -2,6 +2,7 @@ pragma solidity ^0.8.17;
 
 import "./Ownable.sol";
 import "./erc721.sol";
+import "hardhat/console.sol";
 
 contract KataCoins is Ownable, ERC721 {
     uint private nextKataId = 0;
@@ -72,36 +73,27 @@ contract KataCoins is Ownable, ERC721 {
     }
 
     function payCredit(uint nbTry) external payable {
-        require(nbTry >= minNbTry);
-        require(msg.value == nbTry * execFee);
-
+        require(nbTry >= minNbTry, "minimun try is 20" );
+        require(msg.value == nbTry * execFee, "you need to pay the right amount");
+        console.log("payCredit", msg.sender, nbTry);
         _userCredits[msg.sender] += nbTry;
     }
 
-
+    function getCredit() external view returns (uint) {
+        console.log("payCredit", msg.sender, _userCredits[msg.sender]);
+        return _userCredits[msg.sender];
+    }
 
     /// ERC 721 ///
     function transfer(address to, uint256 tokenId) public override onlyOwner {
         // Le kata n'est pas déjà possédé par qqun
-        require(_kataToOwner[tokenId] == address(0));
+        require(_kataToOwner[tokenId] == address(0), "kata already owned");
         _kataToOwner[tokenId] = to;
         emit Transfer(msg.sender, to, tokenId);
     }
 
-    function approve(address _to, uint256 _tokenId) public override {
-
-    }
-
-    function takeOwnership(uint256 _tokenId) public override {
-
-    }
-
-    function balanceOf(address _owner) public view override returns (uint256 _balance){
-        return uint256(0);
-    }
-
     function ownerOf(uint256 _tokenId) public view override returns (address _owner){
-        return address(0);
+        return _kataToOwner[_tokenId];
     }
 
 

@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {ethers} from "hardhat";
+import {ethers, web3} from "hardhat";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
 import {Contract, ContractFactory} from "ethers";
 import {KataCoins} from "../typechain-types";
@@ -25,8 +25,6 @@ describe("Katas", function () {
         KataCoinsContractFactory = await ethers.getContractFactory("KataCoins");
         KataCoinsContract = await KataCoinsContractFactory.connect(owner).deploy();
 
-
-
     });
 
     it("Should create a new kata", async function () {
@@ -41,7 +39,9 @@ describe("Katas", function () {
     });
 
     it("Should get one kata", async function () {
-        const kata = await KataCoinsContract.getKata( kata1ID);
+        const rep = await KataCoinsContract.getKata(kata1ID);
+        const kata = rep[0];
+        const owned = rep[1];
 
         expect(kata.name).to.equal(kataName);
         expect(kata.statement).to.equal(kataStatement);
@@ -49,5 +49,35 @@ describe("Katas", function () {
         expect(kata.test).to.equal(kataTest);
     });
 
+    it("Should not allow to try", async function () {
+        const rep = await KataCoinsContract.connect(owner).canExecuteKata(user1.address);
+        expect(rep).to.equal(false);
+    });
+
+    it("Should pay 20 try and get it", async function () {
+        await KataCoinsContract.connect(user1).payCredit(20, {value: web3.utils.toWei("0.020", 'ether')});
+        expect(await KataCoinsContract.connect(user1).getCredit()).equal(20);
+    });
+
+    it("Should exec 20 kata and not 21", async function () {
+        for (let i = 0; i < 20; i++) {
+            expect(await KataCoinsContract.connect(owner).canExecuteKata(user1.address), "" + i).to.equal(true);
+            expect(async function () {
+                await KataCoinsContract.connect(owner).tryKata(user1.address);
+            }).to.not.throw();
+        }
+
+        expect(await KataCoinsContract.connect(owner).canExecuteKata(user1.address)).to.equal(false);
+    });
+
+    it("Should take ownership", async function () {
+        const rep = await KataCoinsContract.connect(owner).transfer(user1.address, kata1ID);
+        expect(await KataCoinsContract.ownerOf(kata1ID)).to.equal(user1.address);
+    });
+
+    it("Should not take ownership if already owned", async function () {
+        expect( KataCoinsContract.connect(owner).transfer(user1.address, kata1ID)).rejectedWith("kata already owned");
+    });
 
 });
+
