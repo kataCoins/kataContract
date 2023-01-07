@@ -53,14 +53,11 @@ contract KataCoins is Ownable {
         revert("Not found");
     }
 
-    function requestExecution() external payable {
-        require(msg.value == execFee);
-        _allowed_users[msg.sender] = true;
+    //pas payable parce que l'utilisateur à déjà payé un "forfait"
+    function validateKata(uint256 kataId) external {
+        //transfer le kata à l'utilisateur
+//        transfer(msg.sender, kataId);
     }
-
-
-
-
 
 }
 
