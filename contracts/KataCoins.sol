@@ -4,6 +4,8 @@ import "./Ownable.sol";
 import "./erc721.sol";
 
 contract KataCoins is Ownable, ERC721 {
+    uint private nextKataId = 0;
+
     uint execFee = 0.001 ether;
     uint minNbTry = 20;
     Kata[] private _katas;
@@ -33,14 +35,15 @@ contract KataCoins is Ownable, ERC721 {
         execFee = newFee;
     }
 
-    function createKata (
-        uint256 id,
+    function createKata(
         string calldata name,
         string calldata statement,
         string calldata functionDeclaration,
         string calldata test
-    ) external onlyOwner {
-        _katas.push(Kata(id, name, statement, functionDeclaration, test));
+    ) external onlyOwner returns (uint) {
+        _katas.push(Kata(nextKataId, name, statement, functionDeclaration, test));
+        nextKataId ++;
+        return nextKataId - 1;
     }
 
     //renvoyer sans test
@@ -49,9 +52,13 @@ contract KataCoins is Ownable, ERC721 {
     }
 
     function getKata(uint kataId) external view returns (Response memory) {
-        bool isOwned = _kataToOwner[kataId] != address(0);
+        for (uint i = 0; i < _katas.length; i++) {
+            if (_katas[i].id == kataId) {
+                return Response(_katas[i], _kataToOwner[kataId] != address(0));
+            }
+        }
 
-        return Response(_katas[kataId], isOwned);
+        revert("Not found");
     }
 
     //back après execution peut importe le résultat de l'exécution
