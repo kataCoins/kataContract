@@ -1,42 +1,52 @@
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.17;
 
 import "./Ownable.sol";
 
-contract KataCoins is Ownable{
-    Kata[] kata;
-    string _runnerUrl = "TODO";
+contract KataCoins is Ownable {
+    uint execFee = 0.001 ether;
+    Kata[] private _katas;
+    mapping(uint => address) internal _kataToOwner;
 
+    //Les utilisateurs ayant payé pour executer un kata
+    mapping(address => bool) _allowed_users;
 
     struct Kata {
+        uint id;
         string name;
         //Enoncé du kata
         string statement;
+        string functionDeclaration;
+        //Ne pas les envoyer au front
+        string test;
     }
 
-    struct KataRun {
-        string language;
-        //Enoncé du kata
-        string code;
-        address kataId;
+    function changeLevelUpFee(uint newFee) public onlyOwner {
+        execFee = newFee;
     }
 
-    function changeRunnerUrl(string calldata newUrl) public onlyOwner{
-        _runnerUrl = newUrl;
+    function createKata(
+        int id,
+        string calldata name,
+        string calldata statement,
+        string calldata functionDeclaration,
+        string calldata test 
+    ) external onlyOwner {
+        _katas.push(Kata(id, name, statement, functionDeclaration, test));
     }
 
-    //??
-    function runKata(string calldata files) public {
-        //Zipper fichier et encoder en base64 -> faire côté front
-
+    //renvoyer sans test
+    function getAllKata() external view returns (Kata[] memory) {
+        return _katas;
     }
 
-    function execCode() private {
-
-
+    function getKata(uint kataId) external view returns (Kata memory) {
+        return _katas[kataId];
     }
 
-    function createKata() public {
-
+    //pas payable parce que l'utilisateur à déjà payé un "forfait"
+    function validateKata(uint256 kataId) external {
+        //transfer le kata à l'utilisateur
+//        transfer(msg.sender, kataId);
     }
 
 }
