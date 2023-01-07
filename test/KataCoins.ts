@@ -2,13 +2,20 @@ import {expect} from "chai";
 import {ethers} from "hardhat";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
 import {Contract, ContractFactory} from "ethers";
+import {KataCoins} from "../typechain-types";
 
-describe("Kata creation", function () {
+describe("Katas", function () {
     let owner: SignerWithAddress,
         user1: SignerWithAddress;
 
     let ownerAddress: string;
     let KataCoinsContractFactory: ContractFactory, KataCoinsContract: Contract;
+
+    const kataName = "Kata 1";
+    const kataStatement = "Statement 1";
+    const kataFunctionDeclaration = "functionDeclaration 1";
+    const kataTest = "test 1";
+    let kata1ID: any;
 
     before(async function () {
         // @ts-ignore
@@ -18,11 +25,28 @@ describe("Kata creation", function () {
         KataCoinsContractFactory = await ethers.getContractFactory("KataCoins");
         KataCoinsContract = await KataCoinsContractFactory.connect(owner).deploy();
 
+
+
     });
 
     it("Should create a new kata", async function () {
-        await KataCoinsContract.connect(owner).createKata("Kata 1", "K1", "test()", "test");
-        expect((await KataCoinsContract.getAllKata()).length).to.equal(1);
+        kata1ID = (await KataCoinsContract.createKata(kataName, kataStatement, kataFunctionDeclaration, kataTest)).value;
+        const katas = await KataCoinsContract.getAllKata();
+
+        expect(katas.length).to.equal(1);
+        expect(katas[0].name).to.equal(kataName);
+        expect(katas[0].statement).to.equal(kataStatement);
+        expect(katas[0].functionDeclaration).to.equal(kataFunctionDeclaration);
+        expect(katas[0].test).to.equal(kataTest);
+    });
+
+    it("Should get one kata", async function () {
+        const kata = await KataCoinsContract.getKata( kata1ID);
+
+        expect(kata.name).to.equal(kataName);
+        expect(kata.statement).to.equal(kataStatement);
+        expect(kata.functionDeclaration).to.equal(kataFunctionDeclaration);
+        expect(kata.test).to.equal(kataTest);
     });
 
 

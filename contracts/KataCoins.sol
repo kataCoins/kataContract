@@ -3,7 +3,10 @@ pragma solidity ^0.8.17;
 import "./Ownable.sol";
 
 contract KataCoins is Ownable {
+    uint private nextKataId = 0;
+
     uint execFee = 0.001 ether;
+
     Kata[] private _katas;
     mapping(uint => address) internal _kataToOwner;
 
@@ -28,9 +31,11 @@ contract KataCoins is Ownable {
         string calldata name,
         string calldata statement,
         string calldata functionDeclaration,
-        string calldata test 
-    ) external onlyOwner {
-        _katas.push(Kata(0, name, statement, functionDeclaration, test));
+        string calldata test
+    ) external onlyOwner returns (uint) {
+        _katas.push(Kata(nextKataId, name, statement, functionDeclaration, test));
+        nextKataId ++;
+        return nextKataId - 1;
     }
 
     //renvoyer sans test
@@ -39,16 +44,19 @@ contract KataCoins is Ownable {
     }
 
     function getKata(uint kataId) external view returns (Kata memory) {
-        return _katas[kataId];
+        for (uint i = 0; i < _katas.length; i++) {
+            if (_katas[i].id == kataId) {
+                return _katas[i];
+            }
+        }
+
+        revert("Not found");
     }
 
     function requestExecution() external payable {
         require(msg.value == execFee);
         _allowed_users[msg.sender] = true;
     }
-
-
-
 
 
 }
