@@ -87,25 +87,13 @@ contract KataCoins is Ownable, ERC721 {
     /// ERC 721 ///
     function transfer(address to, uint256 tokenId) public override onlyOwner {
         // Le kata n'est pas déjà possédé par qqun
-        require(_kataToOwner[tokenId] == address(0));
+        require(_kataToOwner[tokenId] == address(0), "kata already owned");
         _kataToOwner[tokenId] = to;
         emit Transfer(msg.sender, to, tokenId);
     }
 
-    function approve(address _to, uint256 _tokenId) public override {
-
-    }
-
-    function takeOwnership(uint256 _tokenId) public override {
-
-    }
-
-    function balanceOf(address _owner) public view override returns (uint256 _balance){
-        return uint256(0);
-    }
-
     function ownerOf(uint256 _tokenId) public view override returns (address _owner){
-        return address(0);
+        return _kataToOwner[_tokenId];
     }
 
 
