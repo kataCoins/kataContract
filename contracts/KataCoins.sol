@@ -5,6 +5,8 @@ import "./erc721.sol";
 import "hardhat/console.sol";
 
 contract KataCoins is Ownable, ERC721 {
+    string public name = "KataCoins";
+
     uint private nextKataId = 0;
 
     uint execFee = 0.001 ether;
