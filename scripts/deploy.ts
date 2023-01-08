@@ -1,18 +1,20 @@
 import { ethers } from "hardhat";
-
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  const lockedAmount = ethers.utils.parseEther("1");
+  const KataCoins = await ethers.getContractFactory("KataCoins");
+  //Adresse de test fourni par hardhat
+  const deployer = await ethers.getSigner("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  console.log(
+      "Deploying the contracts with the account:",
+      await deployer.getAddress()
+  );
 
-  await lock.deployed();
+  const kataCoins = await KataCoins.connect(deployer).deploy();
+  await kataCoins.deployed();
 
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
+
+  console.log(`Lock with 1 ETH and unlock timestamp deployed to ${kataCoins.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

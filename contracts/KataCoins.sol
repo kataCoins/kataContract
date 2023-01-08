@@ -5,13 +5,14 @@ import "./erc721.sol";
 import "hardhat/console.sol";
 
 contract KataCoins is Ownable, ERC721 {
-    uint private nextKataId = 0;
+    string public contractName = "KataCoins";
+    uint private nextKataId = 0; // /!\ côté front retourne un objet
 
-    uint execFee = 0.001 ether;
-    uint minNbTry = 20;
+    uint private execFee = 0.001 ether;
+    uint private minNbTry = 20;
+
     Kata[] private _katas;
     mapping(uint => address) internal _kataToOwner;
-
     //Les utilisateurs ayant payé pour executer un kata
     mapping(address => bool) internal _allowed_users;
     mapping(address => uint) internal _userCredits;
