@@ -69,8 +69,9 @@ contract KataCoins is Ownable, ERC721 {
     }
 
     //On vérifie que l'utilisateur a encore du crédit pour faire des essais
-    function canExecuteKata(address user) external view onlyOwner returns (bool) {
-        return _userCredits[user] > 0;
+    function canExecuteKata(address user, uint kataId) external view onlyOwner {
+        require(_kataToOwner[kataId] == address(0), "Kata already owned");
+        require(_userCredits[user] > 0, "Not enough credits");
     }
 
     function payCredit(uint nbTry) external payable {
