@@ -37,6 +37,10 @@ contract KataCoins is Ownable, ERC721 {
         execFee = newFee;
     }
 
+    function getExecFee() external view returns (uint) {
+        return execFee;
+    }
+
     function createKata(
         string calldata name,
         string calldata statement,
