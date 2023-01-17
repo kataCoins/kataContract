@@ -38,6 +38,7 @@
     "web3": "^1.8.1"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.8.1",
     "web3-ts": "^0.2.2"
   }
 }

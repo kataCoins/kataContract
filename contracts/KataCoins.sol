@@ -1,22 +1,20 @@
 pragma solidity ^0.8.17;
 
-import "./Ownable.sol";
-import "./erc721.sol";
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 
 contract KataCoins is Ownable, ERC721 {
-    string public contractName = "KataCoins";
     uint private nextKataId = 0; // /!\ côté front retourne un objet
 
     uint private execFee = 0.001 ether;
     uint private minNbTry = 20;
 
     Kata[] private _katas;
-    mapping(uint => address) internal _kataToOwner;
-    //Les utilisateurs ayant payé pour executer un kata
-    mapping(address => bool) internal _allowed_users;
-    mapping(address => uint) internal _userCredits;
+    mapping(uint => address[]) internal _kataToAllowedUser;
 
+    mapping(address => uint) internal _userCredits;
 
     struct Kata {
         uint id;
@@ -33,12 +31,27 @@ contract KataCoins is Ownable, ERC721 {
         bool isOwned;
     }
 
+    constructor() ERC721("KataCoins", "KTC") {
+    }
+
     function changeLevelUpFee(uint newFee) public onlyOwner {
         execFee = newFee;
     }
 
     function getExecFee() external view returns (uint) {
         return execFee;
+    }
+
+    function payCredit(uint nbTry) external payable {
+        require(nbTry >= minNbTry, "minimun try is 20" );
+        require(msg.value == nbTry * execFee, "you need to pay the right amount");
+        console.log("payCredit", msg.sender, nbTry);
+        _userCredits[msg.sender] += nbTry;
+    }
+
+    function getCredit() external view returns (uint) {
+        console.log("getCredit", msg.sender, _userCredits[msg.sender]);
+        return _userCredits[msg.sender];
     }
 
     function createKata(
@@ -52,7 +65,6 @@ contract KataCoins is Ownable, ERC721 {
         return nextKataId - 1;
     }
 
-    //renvoyer sans test
     function getAllKata() external view returns (Kata[] memory) {
         return _katas;
     }
@@ -60,46 +72,38 @@ contract KataCoins is Ownable, ERC721 {
     function getKata(uint kataId) external view returns (Response memory) {
         for (uint i = 0; i < _katas.length; i++) {
             if (_katas[i].id == kataId) {
-                return Response(_katas[i], _kataToOwner[kataId] != address(0));
+                return Response(_katas[i], _ownerOf(kataId) != address(0));
             }
         }
 
         revert("Not found");
     }
 
-    //back après execution peut importe le résultat de l'exécution
-    function tryKata(address user) external onlyOwner {
-        _userCredits[user] -= 1;
+    function hasSolvedKata(address user, uint kataID) public view returns(bool) {
+        address [] memory allowedUser = _kataToAllowedUser[kataID];
+        for (uint i = 0; i < allowedUser.length; i++) {
+            if (allowedUser[i] == user) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    //On vérifie que l'utilisateur a encore du crédit pour faire des essais
-    function canExecuteKata(address user, uint kataId) external view onlyOwner {
-        require(_kataToOwner[kataId] == address(0), "Kata already owned");
+    function setHasSolvedKata(address user, uint kataID) public onlyOwner {
+        require(_ownerOf(kataID) == address(0), "Kata already owned");
+        _kataToAllowedUser[kataID].push(user);
+    }
+
+    function executeKata(address user, uint kataId) external onlyOwner {
+        require(_ownerOf(kataId) == address(0) , "Kata already owned");
         require(_userCredits[user] > 0, "Not enough credits");
+        _userCredits[user] = _userCredits[user] - 1;
     }
 
-    function payCredit(uint nbTry) external payable {
-        require(nbTry >= minNbTry, "minimun try is 20" );
-        require(msg.value == nbTry * execFee, "you need to pay the right amount");
-        console.log("payCredit", msg.sender, nbTry);
-        _userCredits[msg.sender] += nbTry;
-    }
-
-    function getCredit() external view returns (uint) {
-        console.log("payCredit", msg.sender, _userCredits[msg.sender]);
-        return _userCredits[msg.sender];
-    }
-
-    /// ERC 721 ///
-    function transfer(address to, uint256 tokenId) public override onlyOwner {
-        // Le kata n'est pas déjà possédé par qqun
-        require(_kataToOwner[tokenId] == address(0), "kata already owned");
-        _kataToOwner[tokenId] = to;
-        emit Transfer(msg.sender, to, tokenId);
-    }
-
-    function ownerOf(uint256 _tokenId) public view override returns (address _owner){
-        return _kataToOwner[_tokenId];
+    function mintKata( uint256 tokenId) external {
+        require(hasSolvedKata(msg.sender, tokenId), "You need to solve the kata before");
+        delete _kataToAllowedUser[tokenId];
+        _safeMint(msg.sender, tokenId);
     }
 
 

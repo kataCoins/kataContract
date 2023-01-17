@@ -50,8 +50,7 @@ describe("Katas", function () {
     });
 
     it("Should not allow to try", async function () {
-        const rep = await KataCoinsContract.connect(owner).canExecuteKata(user1.address);
-        expect(rep).to.equal(false);
+        expect( KataCoinsContract.connect(owner).executeKata(user1.address) ).rejectedWith("kata already owned");
     });
 
     it("Should pay 20 try and get it", async function () {
@@ -61,22 +60,23 @@ describe("Katas", function () {
 
     it("Should exec 20 kata and not 21", async function () {
         for (let i = 0; i < 20; i++) {
-            expect(await KataCoinsContract.connect(owner).canExecuteKata(user1.address), "" + i).to.equal(true);
             expect(async function () {
-                await KataCoinsContract.connect(owner).tryKata(user1.address);
+                await KataCoinsContract.connect(owner).executeKata(user1.address, kata1ID);
             }).to.not.throw();
+            expect((await KataCoinsContract.connect(user1).getCredit()).toNumber()).equal(19 - i);
         }
 
-        expect(await KataCoinsContract.connect(owner).canExecuteKata(user1.address)).to.equal(false);
+        expect( KataCoinsContract.connect(owner).executeKata(user1.address) ).rejectedWith("kata already owned");
     });
 
     it("Should take ownership", async function () {
-        const rep = await KataCoinsContract.connect(owner).transfer(user1.address, kata1ID);
+        await KataCoinsContract.connect(owner).setHasSolvedKata(user1.address, kata1ID);
+        await KataCoinsContract.connect(user1).mintKata(kata1ID);
         expect(await KataCoinsContract.ownerOf(kata1ID)).to.equal(user1.address);
     });
 
     it("Should not take ownership if already owned", async function () {
-        expect( KataCoinsContract.connect(owner).transfer(user1.address, kata1ID)).rejectedWith("kata already owned");
+        expect( KataCoinsContract.connect(user1).mintKata(kata1ID)).rejectedWith("kata already owned");
     });
 
 });
