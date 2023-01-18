@@ -32,10 +32,11 @@ describe("Katas", function () {
         const katas = await KataCoinsContract.getAllKata();
 
         expect(katas.length).to.equal(1);
-        expect(katas[0].name).to.equal(kataName);
-        expect(katas[0].statement).to.equal(kataStatement);
-        expect(katas[0].functionDeclaration).to.equal(kataFunctionDeclaration);
-        expect(katas[0].test).to.equal(kataTest);
+        expect(katas[0].kata.name).to.equal(kataName);
+        expect(katas[0].kata.statement).to.equal(kataStatement);
+        expect(katas[0].kata.functionDeclaration).to.equal(kataFunctionDeclaration);
+        expect(katas[0].kata.test).to.equal(kataTest);
+        expect(katas[0].isOwned).to.equal(false);
     });
 
     it("Should get one kata", async function () {
