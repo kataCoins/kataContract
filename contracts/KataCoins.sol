@@ -22,7 +22,6 @@ contract KataCoins is Ownable, ERC721 {
         //Enoncé du kata
         string statement;
         string functionDeclaration;
-        //Ne pas les envoyer au front
         string test;
     }
 
@@ -60,13 +59,23 @@ contract KataCoins is Ownable, ERC721 {
         string calldata functionDeclaration,
         string calldata test
     ) external onlyOwner returns (uint) {
-        _katas.push(Kata(nextKataId, name, statement, functionDeclaration, test));
+        _katas.push(
+            Kata(nextKataId, name, statement, functionDeclaration, test)
+        );
         nextKataId ++;
+
         return nextKataId - 1;
     }
 
-    function getAllKata() external view returns (Kata[] memory) {
-        return _katas;
+    function getAllKata() external view returns (Response[] memory) {
+        Response[] memory res = new Response[](_katas.length);
+
+        for (uint i = 0; i < _katas.length; i++) {
+            Kata memory _kata = _katas[i];
+            res[i] = Response(_kata, _ownerOf(_kata.id) != address(0));
+        }
+
+        return res;
     }
 
     function getKata(uint kataId) external view returns (Response memory) {
@@ -81,11 +90,13 @@ contract KataCoins is Ownable, ERC721 {
 
     function hasSolvedKata(address user, uint kataID) public view returns(bool) {
         address [] memory allowedUser = _kataToAllowedUser[kataID];
+
         for (uint i = 0; i < allowedUser.length; i++) {
             if (allowedUser[i] == user) {
                 return true;
             }
         }
+
         return false;
     }
 
